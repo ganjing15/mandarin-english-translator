@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandarin to English Translator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --secondary-color: #F9FAFB;
+            --text-color: #1F2937;
+            --light-text: #6B7280;
+            --border-color: #E5E7EB;
+            --success-color: #10B981;
+            --error-color: #EF4444;
+            --warning-color: #F59E0B;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 0.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #F3F4F6;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .control-panel {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .record-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex: 1;
+        }
+
+        .record-button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .record-button.recording {
+            background-color: var(--error-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .status {
+            font-size: 0.875rem;
+            color: var(--light-text);
+            flex: 2;
+            padding: 0.5rem;
+            background-color: var(--secondary-color);
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        .input-group, .output-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-family: inherit;
+            min-height: 120px;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .translation-box {
+            background-color: var(--secondary-color);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .translation-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        #translationText {
+            line-height: 1.6;
+        }
+
+        .note {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: rgba(79, 70, 229, 0.1);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            color: var(--light-text);
+        }
+
+        .note p {
+            margin-bottom: 0.5rem;
+        }
+
+        .note p:last-child {
+            margin-bottom: 0;
+        }
+
+        .note strong {
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }
+
+            .control-panel {
+                flex-direction: column;
+            }
+
+            .record-button, .status {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mandarin to English Translator</h1>
+        <div class="control-panel">
+            <button id="recordButton" class="record-button">Start Recording</button>
+            <div id="status" class="status">Click 'Start Recording' to speak in Mandarin</div>
+        </div>
+        <div class="input-group">
+            <label for="mandarinText">Mandarin Text:</label>
+            <textarea name="mandarin_text" id="mandarinText" placeholder="Type or paste Mandarin text here, or use the recording button above..."></textarea>
+        </div>
+        <div class="translation-box" id="translationBox" style="display: none;">
+            <div class="translation-title">English Translation:</div>
+            <div id="translationText"></div>
+        </div>
+        <div class="note">
+            <p><strong>Note:</strong> Using OpenAI Whisper for high-quality speech recognition. Translation happens automatically.</p>
+            <p>For best results, speak clearly and ensure your microphone is working properly.</p>
+        </div>
+    </div>
+
+    <script>
+        const recordButton = document.getElementById('recordButton');
+        const status = document.getElementById('status');
+        const mandarinText = document.getElementById('mandarinText');
+        const translationBox = document.getElementById('translationBox');
+        const translationText = document.getElementById('translationText');
+        
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let translationTimer = null;
+        
+        // Function to call server for transcription and translation
+        async function processAudio(audioBlob) {
+            try {
+                status.textContent = 'Processing audio...';
+                status.style.backgroundColor = 'rgba(245, 158, 11, 0.2)'; // Warning color
+                
+                // Create form data with audio file
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.webm');
+                
+                // Send to server for processing
+                const response = await fetch('/process_audio', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Check for errors in the response
+                    if (result.error) {
+                        status.textContent = result.error;
+                        status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+                        return;
+                    }
+                    
+                    // Update the Mandarin text
+                    if (result.transcription) {
+                        mandarinText.value = result.transcription;
+                        status.style.backgroundColor = 'rgba(16, 185, 129, 0.2)'; // Success color
+                    } else {
+                        status.textContent = 'No speech detected. Please try speaking louder or longer.';
+                        status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+                        return;
+                    }
+                    
+                    // Update the translation
+                    if (result.translation) {
+                        translationBox.style.display = 'block';
+                        translationText.textContent = result.translation;
+                        status.textContent = 'Translation complete';
+                    }
+                } else {
+                    status.textContent = 'Error processing audio';
+                    status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+                }
+            } catch (error) {
+                console.error('Processing error:', error);
+                status.textContent = 'Error processing audio';
+                status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+            }
+        }
+
+        // Function to translate text directly
+        async function translateText(text) {
+            if (!text.trim()) return;
+            
+            try {
+                status.textContent = 'Translating...';
+                status.style.backgroundColor = 'rgba(245, 158, 11, 0.2)'; // Warning color
+                
+                const response = await fetch('/translate_text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        'mandarin_text': text
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.translation) {
+                        translationBox.style.display = 'block';
+                        translationText.textContent = result.translation;
+                        status.textContent = 'Translation complete';
+                        status.style.backgroundColor = 'rgba(16, 185, 129, 0.2)'; // Success color
+                    } else {
+                        status.textContent = 'Error translating text';
+                        status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+                    }
+                } else {
+                    status.textContent = 'Error translating text';
+                    status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+                }
+            } catch (error) {
+                console.error('Translation error:', error);
+                status.textContent = 'Error translating text';
+                status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+            }
+        }
+
+        // Schedule translation after a short delay
+        function scheduleTranslation() {
+            if (translationTimer) {
+                clearTimeout(translationTimer);
+            }
+            
+            translationTimer = setTimeout(() => {
+                if (mandarinText.value.trim()) {
+                    translateText(mandarinText.value);
+                }
+            }, 1000); // 1 second delay
+        }
+
+        // Set up audio recording
+        async function setupRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'audio/webm;codecs=opus'
+                });
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    console.log("Audio blob created, size:", audioBlob.size);
+                    processAudio(audioBlob);
+                };
+                
+                return true;
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                status.textContent = 'Error: Microphone access denied';
+                status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Error color
+                return false;
+            }
+        }
+
+        recordButton.addEventListener('click', async function() {
+            if (!isRecording) {
+                // Start recording
+                const setupSuccess = await setupRecording();
+                if (setupSuccess) {
+                    isRecording = true;
+                    audioChunks = [];
+                    recordButton.textContent = 'Stop Recording';
+                    recordButton.classList.add('recording');
+                    status.textContent = 'Recording... Speak in Mandarin';
+                    status.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; // Recording color
+                    mediaRecorder.start();
+                }
+            } else {
+                // Stop recording
+                isRecording = false;
+                recordButton.textContent = 'Start Recording';
+                recordButton.classList.remove('recording');
+                status.textContent = 'Processing...';
+                status.style.backgroundColor = 'rgba(245, 158, 11, 0.2)'; // Warning color
+                
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+            }
+        });
+        
+        // Also translate when text is manually entered
+        mandarinText.addEventListener('input', function() {
+            scheduleTranslation();
+        });
+    </script>
+</body>
+</html>
