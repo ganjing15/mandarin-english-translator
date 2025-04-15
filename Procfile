@@ -1,1 +1,1 @@
-web: gunicorn translator:app
+web: gunicorn wsgi:app
